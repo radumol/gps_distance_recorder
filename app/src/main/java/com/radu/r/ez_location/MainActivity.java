@@ -3,7 +3,9 @@ package com.radu.r.ez_location;
 import android.Manifest;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.os.Build;
 import android.os.Looper;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -17,7 +19,13 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.SettingsClient;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.text.DateFormat;
+import java.util.Date;
+
 public class MainActivity extends AppCompatActivity {
+
+    private static double distanceRec;
+    private Location prevLocation;
 
     private LocationRequest mLocationRequest;
 
@@ -57,7 +65,12 @@ public class MainActivity extends AppCompatActivity {
                     Manifest.permission.ACCESS_FINE_LOCATION
             }, 7123);
         }
+
+        GPS_tracker g = new GPS_tracker(getApplicationContext());
+        prevLocation = g.getLocation();
+
         LocationServices.getFusedLocationProviderClient(this).requestLocationUpdates(mLocationRequest, new LocationCallback() {
+                    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
                     @Override
                     public void onLocationResult(LocationResult locationResult) {
                         // do work here
@@ -67,13 +80,29 @@ public class MainActivity extends AppCompatActivity {
                 Looper.myLooper());
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN_MR2)
     public void onLocationChanged(Location location) {
         // New location has now been determined
-        String msg = "Updated Location: " +
+
+        distanceRec = distanceRec + DistanceCalculator.distance(location.getLatitude(), location.getLongitude(), prevLocation.getLatitude(), prevLocation.getLongitude(), "K");
+
+
+
+        String msg1 = "Updated Location: " +
                 Double.toString(location.getLatitude()) + "," +
-                Double.toString(location.getLongitude());
+                Double.toString(location.getLongitude()) + ", Altitude:" + Double.toString(location.getAltitude()) + ", Has alt: " + location.hasAltitude() + ", Accuracy: " + location.getAccuracy()
+                + ", Mockprovidor " + location.isFromMockProvider() + ", speed: " + location.getSpeed() + ", time: " + DateFormat.getDateInstance(DateFormat.SHORT).format(location.getTime());
+
+        String msg = "Distance: " + distanceRec + "\nUpdated Location: " +
+                Double.toString(location.getLatitude()) + "," +
+                Double.toString(location.getLongitude()) + "\nOld Location: " +
+                Double.toString(prevLocation.getLatitude()) + "," +
+                Double.toString(prevLocation.getLongitude());
+
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+
         // You can now create a LatLng Object for use with maps
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        prevLocation = location;
     }
 }
