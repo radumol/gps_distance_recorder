@@ -24,13 +24,13 @@ import java.util.Date;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static double distanceRec;
+    private static double distanceRec = 0;
     private Location prevLocation;
 
     private LocationRequest mLocationRequest;
 
-    private long UPDATE_INTERVAL = 10 * 1000;  /* 10 secs */
-    private long FASTEST_INTERVAL = 10000; /* 2 sec */
+    private long UPDATE_INTERVAL = 12 * 1000;  /* 10 secs */
+    private long FASTEST_INTERVAL = 8000; /* 2 sec */
 
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -84,8 +84,9 @@ public class MainActivity extends AppCompatActivity {
     public void onLocationChanged(Location location) {
         // New location has now been determined
 
-        distanceRec = distanceRec + DistanceCalculator.distance(location.getLatitude(), location.getLongitude(), prevLocation.getLatitude(), prevLocation.getLongitude(), "K");
-
+        //distanceRec = distanceRec + DistanceCalculator.distance(location.getLatitude(), location.getLongitude(), prevLocation.getLatitude(), prevLocation.getLongitude(), "K");
+        double currentDistance = location.distanceTo(prevLocation); //in meters
+        distanceRec = distanceRec + currentDistance;
 
 
         String msg1 = "Updated Location: " +
@@ -93,13 +94,15 @@ public class MainActivity extends AppCompatActivity {
                 Double.toString(location.getLongitude()) + ", Altitude:" + Double.toString(location.getAltitude()) + ", Has alt: " + location.hasAltitude() + ", Accuracy: " + location.getAccuracy()
                 + ", Mockprovidor " + location.isFromMockProvider() + ", speed: " + location.getSpeed() + ", time: " + DateFormat.getDateInstance(DateFormat.SHORT).format(location.getTime());
 
-        String msg = "Distance: " + distanceRec + "\nUpdated Location: " +
+        String msg = "\nAA" + "\nCurrent Distance: " + currentDistance +"\nDistance: " + distanceRec + "\nUpdated Location: " +
                 Double.toString(location.getLatitude()) + "," +
                 Double.toString(location.getLongitude()) + "\nOld Location: " +
                 Double.toString(prevLocation.getLatitude()) + "," +
                 Double.toString(prevLocation.getLongitude());
 
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+
+        System.out.println(msg);
+        Toast.makeText(this, msg, Toast.LENGTH_LONG).show();
 
         // You can now create a LatLng Object for use with maps
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
